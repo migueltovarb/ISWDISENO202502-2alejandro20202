@@ -4,10 +4,12 @@ import com.cafeteria.campus.model.*;
 import com.cafeteria.campus.repository.CartRepository;
 import com.cafeteria.campus.repository.ProductRepository;
 import com.cafeteria.campus.repository.OrderRepository;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/cart")
@@ -21,13 +23,12 @@ public class CartController {
     public CartController(CartRepository cartRepository,
                           ProductRepository productRepository,
                           OrderRepository orderRepository) {
-
         this.cartRepository = cartRepository;
         this.productRepository = productRepository;
         this.orderRepository = orderRepository;
     }
 
-    // Obtener carrito por userId
+    // Obtener carrito por usuario
     @GetMapping("/{userId}")
     public Cart getCart(@PathVariable String userId) {
 
@@ -42,11 +43,12 @@ public class CartController {
                 });
     }
 
-    // Agregar ítem
+    // Agregar item
     @PostMapping("/{userId}/items")
     public Cart addItem(@PathVariable String userId, @RequestBody AddItemRequest req) {
 
         Cart cart = getCart(userId);
+
         Product product = productRepository.findById(req.getProductId())
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 
@@ -74,18 +76,16 @@ public class CartController {
         return cartRepository.save(cart);
     }
 
-    // Eliminar un ítem
+    // Eliminar item
     @DeleteMapping("/{userId}/items/{productId}")
     public Cart removeItem(@PathVariable String userId, @PathVariable String productId) {
 
         Cart cart = getCart(userId);
-
         cart.getItems().removeIf(i -> i.getProductId().equals(productId));
-
         return cartRepository.save(cart);
     }
 
-    // Checkout → crear Pedido
+    // Checkout (crear Order)
     @PostMapping("/{userId}/checkout")
     public Order checkout(@PathVariable String userId) {
 
@@ -112,6 +112,7 @@ public class CartController {
         return o;
     }
 
+    // Request para agregar items
     static class AddItemRequest {
         private String productId;
         private int quantity;
